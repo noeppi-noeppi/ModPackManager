@@ -5,35 +5,28 @@ import com.therandomlabs.curseapi.minecraft.modpack.CurseModpack;
 import com.therandomlabs.curseapi.project.CurseMember;
 import com.therandomlabs.curseapi.project.CurseProject;
 
-import java.io.File;
-import java.io.FileWriter;
+import javax.annotation.WillClose;
 import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.io.Writer;
 
 public class ModListCreator {
 
-    public static void main(String[] args) throws CurseException, IOException {
-		CurseModpack pack = CurseModpack.fromJSON(Paths.get("manifest.json"));
-		List<String> projects = new ArrayList<>();
-		StringBuilder builder = new StringBuilder();
-		builder.append("<ul>");
-		pack.files().forEach(file -> {
-			try {
-				projects.add(String.format("<li>%s (by %s)\n</li>", getFormattedProject(file.project()), getFormattedAuthor(file.project().author())));
-			} catch (CurseException e) {
-				e.printStackTrace();
-			}
-		});
-		Collections.sort(projects);
-		projects.forEach(builder::append);
-		builder.append("</ul>");
-		String content = builder.toString();
-		File html = new File("modlist.html");
-		FileWriter writer = new FileWriter(html);
-		writer.write(content);
+    public static void writeModList(CurseModpack pack, @WillClose Writer writer) throws IOException, CurseException {
+		writer.write("<ul>\n");
+		pack.files().stream().map(file -> {
+            try {
+                return String.format("<li>%s (by %s)</li>\n", getFormattedProject(file.project()), getFormattedAuthor(file.project().author()));
+            } catch (CurseException e) {
+                throw new RuntimeException(e);
+            }
+        }).sorted().forEach(str -> {
+            try {
+                writer.write(str);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+		writer.write("</ul>\n");
 		writer.close();
     }
 

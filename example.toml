@@ -1,0 +1,9 @@
+name = "Modpack Name"
+minecraft = "Minecraft Version"
+forge = "Forge Version"
+author = "Modpack Author"
+version = "Modpack Version"
+
+[[file]]
+  project = "Slug or id"
+  file = "File name or id"
