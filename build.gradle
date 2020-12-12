@@ -6,6 +6,9 @@ plugins {
 group 'io.github.noeppi_noeppi.modpack-manager'
 version '1.0'
 
+//noinspection GroovyUnusedAssignment
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
+
 repositories {
 	mavenCentral()
     maven {
