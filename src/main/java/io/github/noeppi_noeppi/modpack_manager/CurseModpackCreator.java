@@ -64,7 +64,7 @@ public class CurseModpackCreator {
             } catch (NumberFormatException e) {
                 projectOption = CurseAPI.project("/minecraft/mc-mods/" + projectStr);
             }
-            if (projectOption.isEmpty()) {
+            if (!projectOption.isPresent()) {
                 throw new NoSuchElementException("Project " + projectStr + " not found.");
             }
 
@@ -81,7 +81,7 @@ public class CurseModpackCreator {
             for (CurseFile projectFile : project.files()) {
                 if ((fileId >= 0 && projectFile.id() == fileId) || fileStr.equalsIgnoreCase(projectFile.nameOnDisk())) {
                     if (projectFile.gameVersionStrings().stream().noneMatch(gv -> gv.equalsIgnoreCase(mcv.versionString()))) {
-                        throw new IllegalStateException("File " + projectFile.nameOnDisk() + " of project " + project.name() + " is not available for minecraft version " + mcv.versionString() + ".");
+                        System.out.println("Warning: explicit declared file " + fileStr + " of project " + project.name() + " does not support " + mcv);
                     }
                     if (projectFile.gameVersionStrings().stream().anyMatch(gv -> gv.equalsIgnoreCase(MCVersions.FABRIC.versionString()))) {
                         throw new IllegalStateException("File " + projectFile.nameOnDisk() + " of project " + project.name() + " is a fabric mod.");
@@ -105,7 +105,7 @@ public class CurseModpackCreator {
         }
         Set<Integer> additionalProjects = dependencies.stream()
                 .map(CurseDependency::projectID)
-                .filter(projectId -> files.stream().noneMatch(file -> file.id() == projectId))
+                .filter(projectId -> files.stream().noneMatch(file -> file.projectID() == projectId))
                 .collect(Collectors.toSet());
         for (int projectId : additionalProjects) {
             //noinspection OptionalGetWithoutIsPresent
@@ -114,7 +114,7 @@ public class CurseModpackCreator {
                     .filter(file -> file.gameVersionStrings().stream().anyMatch(gv -> gv.equalsIgnoreCase(mcv.versionString()))
                             && file.gameVersionStrings().stream().noneMatch(gv -> gv.equalsIgnoreCase(MCVersions.FABRIC.versionString()))
                             && file.gameVersionStrings().stream().noneMatch(gv -> gv.equalsIgnoreCase(MCVersions.RIFT.versionString()))).max((f1, f2) -> f2.id() == f1.id() ? 0 : (f1.olderThan(f2) ? -1 : 1));
-            if (projectFile.isEmpty()) {
+            if (!projectFile.isPresent()) {
                 throw new IllegalStateException("Could not resolve dependency: " + projectId);
             }
             files.add(projectFile.get());
